@@ -5,11 +5,17 @@ import { defaultPluginConfig, isBasePluginConfig, Plugin } from './plugins';
 import { CronMessagePlugin } from './plugins/cron_message';
 import { LaunchMessagePlugin } from './plugins/launch_message';
 import { NullPlugin } from './plugins/null';
+import { PluginsListPlugin } from './plugins/plugins_list';
 import { fix } from './utils/fix';
 
 dotenv.config();
 
-const plugins = [NullPlugin, CronMessagePlugin, LaunchMessagePlugin];
+export const plugins = [
+  NullPlugin,
+  CronMessagePlugin,
+  LaunchMessagePlugin,
+  PluginsListPlugin,
+];
 
 async function main() {
   const botToken = process.env.SLACK_BOT_TOKEN;

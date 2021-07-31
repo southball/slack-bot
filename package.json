@@ -9,7 +9,13 @@
   "devDependencies": {
     "@types/node": "^16.4.8",
     "@types/sprintf-js": "^1.1.2",
+    "@typescript-eslint/eslint-plugin": "^4.28.5",
+    "@typescript-eslint/parser": "^4.28.5",
     "bufferutil": "^4.0.3",
+    "eslint": "^7.32.0",
+    "husky": ">=6",
+    "lint-staged": ">=10",
+    "prettier": "^2.3.2",
     "ts-loader": "^9.2.4",
     "ts-node": "^10.1.0",
     "tslib": "^2.3.0",
@@ -20,7 +26,8 @@
   },
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "webpack"
+    "build": "webpack",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@slack/bolt": "^3.5.0",
@@ -30,5 +37,8 @@
     "monapt": "^2.1.0",
     "sprintf-js": "^1.1.2",
     "yaml": "^1.10.2"
+  },
+  "lint-staged": {
+    "*.ts": ["eslint --cache --fix", "prettier --write"]
   }
 }

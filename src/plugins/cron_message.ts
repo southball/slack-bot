@@ -1,4 +1,6 @@
+import * as Handlebars from 'handlebars';
 import { None, Option } from 'monapt';
+import { vsprintf } from 'sprintf-js';
 import { BasePluginConfig, Plugin } from '.';
 
 type CronJob = {
@@ -59,6 +61,10 @@ export class CronMessagePlugin extends Plugin<CronMessagePluginConfig> {
     }
 
     async register(): Promise<void> {
+        Handlebars.registerHelper("sprintf", (format, ...args) => {
+            return new Handlebars.SafeString(vsprintf(format, args));
+        });
+
         this.timer = Option(setInterval(() => this.kickoff(), 60000));
         this.kickoff();
     }
@@ -83,8 +89,13 @@ export class CronMessagePlugin extends Plugin<CronMessagePluginConfig> {
                 (typeof job.hour === "undefined" || matchFilter(date.getHours(), job.hour)) &&
                 (typeof job.minute === "undefined" || matchFilter(date.getMinutes(), job.minute))
             ) {
-                // TODO allow variables in message.
-                messages.push(job.message);
+                const message = Handlebars.compile(job.message)({
+                    hour: date.getHours(),
+                    minute: date.getMinutes(),
+                    month: date.getMonth(),
+                    date: date.getDate(),
+                });
+                messages.push(message);
             }
         }
 

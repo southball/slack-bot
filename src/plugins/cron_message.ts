@@ -30,11 +30,11 @@ const validatePluginConfig = (config: unknown): config is CronMessagePluginConfi
     const isValidCron = (cron: unknown): cron is CronJob => (
         typeof cron === "object" &&
         typeof cron["message"] === "string" &&
-        (typeof cron["month"] === "number" || Array.isArray(cron["month"]) && cron["month"].every((month) => typeof month === "number" && 1 <= month && month <= 12)) &&
-        (typeof cron["date"] === "number" || Array.isArray(cron["date"]) && cron["date"].every((date) => typeof date === "number" && 1 <= date && date <= 31)) &&
-        (typeof cron["day"] === "number" || Array.isArray(cron["day"]) && cron["day"].every((day) => typeof day === "number" && 0 <= day && day <= 6)) &&
-        (typeof cron["hour"] === "number" || Array.isArray(cron["hour"]) && cron["hour"].every((hour) => typeof hour === "number" && 0 <= hour && hour <= 23)) &&
-        (typeof cron["minute"] === "number" || Array.isArray(cron["minute"]) && cron["minute"].every((minute) => typeof minute === "number" && 0 <= minute && minute <= 59))
+        (typeof cron["month"] === "undefined" || typeof cron["month"] === "number" || Array.isArray(cron["month"]) && cron["month"].every((month) => typeof month === "number" && 1 <= month && month <= 12)) &&
+        (typeof cron["date"] === "undefined" || typeof cron["date"] === "number" || Array.isArray(cron["date"]) && cron["date"].every((date) => typeof date === "number" && 1 <= date && date <= 31)) &&
+        (typeof cron["day"] === "undefined" || typeof cron["day"] === "number" || Array.isArray(cron["day"]) && cron["day"].every((day) => typeof day === "number" && 0 <= day && day <= 6)) &&
+        (typeof cron["hour"] === "undefined" || typeof cron["hour"] === "number" || Array.isArray(cron["hour"]) && cron["hour"].every((hour) => typeof hour === "number" && 0 <= hour && hour <= 23)) &&
+        (typeof cron["minute"] === "undefined" || typeof cron["minute"] === "number" || Array.isArray(cron["minute"]) && cron["minute"].every((minute) => typeof minute === "number" && 0 <= minute && minute <= 59))
     );
     return typeof config === "object" && (typeof config["crons"] === "undefined" || Array.isArray(config["crons"]) && config["crons"].every(isValidCron));
 }

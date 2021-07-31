@@ -1,0 +1,16 @@
+channel_id: ""
+
+plugins:
+  null_plugin:
+    enabled: false
+  
+  # cron_message:
+  #   enabled: true
+  #   crons:
+  #     - hour: 8
+  #       minute: 0
+  #       message: "Good morning. It is the beginning of a new day."
+  
+  # launch_message:
+  #   enabled: true
+  #   message: "The bot is launched."

@@ -1,18 +1,26 @@
-import {
-  BasePluginConfig,
-  defaultPluginConfig,
-  isBasePluginConfig,
-  Plugin,
-} from '.';
+import { Type } from 'class-transformer';
+import { IsOptional, IsString, ValidateNested } from 'class-validator';
+import { BasePluginConfig, defaultPluginConfig, Plugin } from '.';
 import { plugins } from '..';
 
-export class PluginsListPluginConfig extends BasePluginConfig {}
+export class PluginsListPluginOverride {
+  @IsOptional()
+  @IsString()
+  command?: string;
+}
+
+export class PluginsListPluginConfig extends BasePluginConfig {
+  @ValidateNested()
+  @IsOptional()
+  @Type(() => PluginsListPluginOverride)
+  override?: PluginsListPluginOverride;
+}
 
 export class PluginsListPlugin extends Plugin<PluginsListPluginConfig> {
   static id = 'plugins_list';
   static pluginName = 'Plugins List';
   static requiredPlugins: string[] = [];
-  static configClasss = PluginsListPluginConfig;
+  static configClass = PluginsListPluginConfig;
 
   async init(): Promise<void> {
     return;
@@ -23,7 +31,8 @@ export class PluginsListPlugin extends Plugin<PluginsListPluginConfig> {
   }
 
   async register(): Promise<void> {
-    this.app.message('plugins list', async ({ say }) => {
+    const command = this.pluginConfig.override?.command ?? 'plugins list';
+    this.app.message(command, async ({ say }) => {
       const list =
         'Plugins List:\n' +
         plugins

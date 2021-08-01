@@ -28,10 +28,13 @@ plugins:
   #       minute: 0
   #       message: "Good night!"
   
-  # # This is a plugin that provides a function to list all plugins, and show
+  # # This is a plugin that provides a command to list all plugins, and show
   # # whether they are enabled or not.
   # plugins_list:
   #   enabled: false
+  #   override:
+  #     # You can change the keyword that triggers the command.
+  #     command: "plugins list"
 
   # # This is a plugin for debug purposes and serves no function.
   # null_plugin:

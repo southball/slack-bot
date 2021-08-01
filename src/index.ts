@@ -10,6 +10,7 @@ import { CronMessagePlugin } from './plugins/cron_message';
 import { LaunchMessagePlugin } from './plugins/launch_message';
 import { NullPlugin } from './plugins/null';
 import { PluginsListPlugin } from './plugins/plugins_list';
+import { TextSlashCommandPlugin } from './plugins/text_slash_command';
 import { fix } from './utils/fix';
 import { stringifyWithCircularReference } from './utils/stringify';
 
@@ -20,6 +21,7 @@ export const plugins = [
   CronMessagePlugin,
   LaunchMessagePlugin,
   PluginsListPlugin,
+  TextSlashCommandPlugin,
 ];
 
 async function main() {
@@ -44,6 +46,7 @@ async function main() {
     if (typeof pluginConfig !== 'object') {
       throw new Error(`Config for plugin ${T.id} should be an object.`);
     }
+    console.log(`Validating config for plugin ${T.id}...`);
     const validatedPluginConfig = await transformAndValidate(
       T.configClass,
       pluginConfig,

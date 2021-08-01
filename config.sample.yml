@@ -40,3 +40,17 @@ plugins:
   # null_plugin:
   #   enabled: false
   
+  # # This is a plugin for replying to slash commands with simple messages.
+  # text_slash_command:
+  #   enabled: true
+  #   commands:
+  #     - command: "/good_morning"
+  #       mode: "random1" # Sends one random message from replies
+  #       replies:
+  #         - "Good morning!"
+  #         - "Good morning! Wish you a good day!"
+  #     - command: "/rules"
+  #       mode: "sequential" # Sends the messages from replies one by one.
+  #       replies:
+  #         - "Rule 1: blah blah blah"
+  #         - "Rule 2: blah blah blah"

@@ -1,9 +1,11 @@
 import { App } from '@slack/bolt';
+import { IsBoolean } from 'class-validator';
 import { Config } from '../config';
 
-export type BasePluginConfig = {
+export class BasePluginConfig {
+  @IsBoolean()
   enabled: boolean;
-};
+}
 
 export const defaultPluginConfig: BasePluginConfig = {
   enabled: false,
@@ -33,15 +35,9 @@ export abstract class Plugin<PluginConfig extends BasePluginConfig> {
   static requiredPlugins: string[];
 
   /**
-   * A type guard to check whether the config for the plugin is valid.
-   * @param config Object to be verified.
-   * @returns whether config matches the type for the config of the plugin.
+   * Class object for the config. Used for config validation and transformation.
    */
-  static validatePluginConfig(config: unknown): config is BasePluginConfig {
-    throw new Error(
-      'validatePluginConfig has not been overriden for this plugin.',
-    );
-  }
+  static configClass: typeof BasePluginConfig;
 
   /**
    * The App object in @slack/bolt.

@@ -1,15 +1,12 @@
 import { BasePluginConfig, Plugin } from '.';
 
-export type NullPluginConfig = BasePluginConfig;
+export class NullPluginConfig extends BasePluginConfig {}
 
 export class NullPlugin extends Plugin<NullPluginConfig> {
   static id = 'null_plugin';
   static pluginName = 'Null Plugin';
   static requiredPlugins: string[] = [];
-
-  static validatePluginConfig(config: unknown): config is NullPluginConfig {
-    return true;
-  }
+  static configClass = NullPluginConfig;
 
   async init(): Promise<void> {
     return;

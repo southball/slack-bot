@@ -6,18 +6,13 @@ import {
 } from '.';
 import { plugins } from '..';
 
-export type PluginsListPluginConfig = BasePluginConfig;
+export class PluginsListPluginConfig extends BasePluginConfig {}
 
 export class PluginsListPlugin extends Plugin<PluginsListPluginConfig> {
   static id = 'plugins_list';
   static pluginName = 'Plugins List';
   static requiredPlugins: string[] = [];
-
-  static validatePluginConfig(
-    config: unknown,
-  ): config is PluginsListPluginConfig {
-    return isBasePluginConfig(config);
-  }
+  static configClasss = PluginsListPluginConfig;
 
   async init(): Promise<void> {
     return;
@@ -28,9 +23,9 @@ export class PluginsListPlugin extends Plugin<PluginsListPluginConfig> {
   }
 
   async register(): Promise<void> {
-    this.app.message('plugins list', async ({ message, say }) => {
+    this.app.message('plugins list', async ({ say }) => {
       const list =
-        `Plugins List:\n` +
+        'Plugins List:\n' +
         plugins
           .map((plugin) => {
             const config =

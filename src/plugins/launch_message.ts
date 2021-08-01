@@ -1,23 +1,16 @@
+import { IsString } from 'class-validator';
 import { BasePluginConfig, Plugin } from '.';
 
-export type LaunchMessagePluginConfig = BasePluginConfig & {
+export class LaunchMessagePluginConfig extends BasePluginConfig {
+  @IsString()
   message: string;
-};
+}
 
 export class LaunchMessagePlugin extends Plugin<LaunchMessagePluginConfig> {
   static id = 'launch_message';
   static pluginName = 'Launch Message Plugin';
   static requiredPlugins: string[] = [];
-
-  static validatePluginConfig(
-    config: unknown,
-  ): config is LaunchMessagePluginConfig {
-    return (
-      typeof config === 'object' &&
-      (config['enabled'] === false ||
-        (config['enabled'] === true && typeof config['message'] === 'string'))
-    );
-  }
+  static configClass = LaunchMessagePluginConfig;
 
   async init(): Promise<void> {
     return;

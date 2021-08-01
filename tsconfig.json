@@ -1,8 +1,9 @@
 {
     "compilerOptions": {
         "moduleResolution": "Node",
-        "target": "ES6",
-        "allowJs": true
+        "target": "es2019",
+        "allowJs": true,
+        "experimentalDecorators": true
     },
     "exclude": [
         "node_modules"

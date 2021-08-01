@@ -2,6 +2,8 @@
 /config.yml
 /dist
 /deploy.sh
+/error.log
+/yarn-error.log
 
 .env
 .eslintcache

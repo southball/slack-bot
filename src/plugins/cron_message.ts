@@ -1,24 +1,73 @@
+import { Type } from 'class-transformer';
+import {
+  IsOptional,
+  IsString,
+  Validate,
+  ValidateNested,
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
 import * as Handlebars from 'handlebars';
 import { None, Option } from 'monapt';
 import { vsprintf } from 'sprintf-js';
 import { BasePluginConfig, Plugin } from '.';
 
-type CronJob = {
+@ValidatorConstraint({ name: 'cronExpression', async: false })
+export class CronExpression implements ValidatorConstraintInterface {
+  validate(
+    value: number | number[],
+    validationArguments?: ValidationArguments,
+  ): boolean | Promise<boolean> {
+    const [low, high] = validationArguments.constraints;
+    return (
+      (typeof value === 'number' && low <= value && value <= high) ||
+      (Array.isArray(value) &&
+        value.every(
+          (entry) => typeof entry === 'number' && low <= entry && entry <= high,
+        ))
+    );
+  }
+  defaultMessage?(validationArguments?: ValidationArguments): string {
+    const [low, high] = validationArguments.constraints;
+    return `The values should be a number or an array of numbers between ${low} and ${high}.`;
+  }
+}
+
+export class CronJob {
+  @IsString()
   message: string;
+
+  @IsOptional()
+  @Validate(CronExpression, [1, 12])
   month?: number | number[];
+
+  @IsOptional()
+  @Validate(CronExpression, [1, 31])
   date?: number | number[];
 
   /**
    * Day of week. 0 for Sunday, 1 for Monday and so on.
    */
+  @IsOptional()
+  @Validate(CronExpression, [0, 6])
   day?: number | number[];
-  hour?: number | number[];
-  minute?: number | number[];
-};
 
-export type CronMessagePluginConfig = BasePluginConfig & {
+  @IsOptional()
+  @Validate(CronExpression, [0, 23])
+  hour?: number | number[];
+
+  @IsOptional()
+  @Validate(CronExpression, [0, 59])
+  minute?: number | number[];
+}
+
+export class CronMessagePluginConfig extends BasePluginConfig {
+  // @IsOptional()
+  @ValidateNested()
+  @Type(() => CronJob)
   crons?: CronJob[];
-};
+}
 
 const matchFilter = (value: number, filter: number | number[]) => {
   if (Array.isArray(filter)) {
@@ -28,45 +77,13 @@ const matchFilter = (value: number, filter: number | number[]) => {
   }
 };
 
-const validatePluginConfig = (
-  config: unknown,
-): config is CronMessagePluginConfig => {
-  const isValidFilter = (filter: unknown, min: number, max: number): boolean =>
-    typeof filter === 'undefined' ||
-    (typeof filter === 'number' && min <= filter && filter <= max) ||
-    (Array.isArray(filter) &&
-      filter.every(
-        (value) => typeof value === 'number' && min <= value && value <= max,
-      ));
-
-  const isValidCron = (cron: unknown): cron is CronJob =>
-    typeof cron === 'object' &&
-    typeof cron['message'] === 'string' &&
-    isValidFilter(cron['month'], 1, 12) &&
-    isValidFilter(cron['date'], 1, 31) &&
-    isValidFilter(cron['day'], 0, 6) &&
-    isValidFilter(cron['hour'], 0, 23) &&
-    isValidFilter(cron['minute'], 0, 59);
-
-  return (
-    typeof config === 'object' &&
-    (typeof config['crons'] === 'undefined' ||
-      (Array.isArray(config['crons']) && config['crons'].every(isValidCron)))
-  );
-};
-
 export class CronMessagePlugin extends Plugin<CronMessagePluginConfig> {
   static id = 'cron_message';
   static pluginName = 'Cron Message Plugin';
   static requiredPlugins: string[] = [];
+  static configClass = CronMessagePluginConfig;
 
   timer: Option<NodeJS.Timer> = None;
-
-  static validatePluginConfig(
-    config: unknown,
-  ): config is CronMessagePluginConfig {
-    return validatePluginConfig(config);
-  }
 
   async init(): Promise<void> {
     return;
@@ -77,12 +94,6 @@ export class CronMessagePlugin extends Plugin<CronMessagePluginConfig> {
   }
 
   async register(): Promise<void> {
-    Handlebars.registerHelper('sprintf', (format, ...args) => {
-      return new Handlebars.SafeString(vsprintf(format, args));
-    });
-    Handlebars.registerHelper('sprintf', (format, ...args) => {
-      return new Handlebars.SafeString(vsprintf(format, args));
-    });
     Handlebars.registerHelper('sprintf', (format, ...args) => {
       return new Handlebars.SafeString(vsprintf(format, args));
     });

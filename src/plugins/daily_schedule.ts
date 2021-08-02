@@ -11,11 +11,12 @@ import { isBefore, addMinutes, parse, format } from 'date-fns';
 import { Type } from 'class-transformer';
 import { TimetablePlugin } from './timetable';
 import * as Handlebars from 'handlebars';
+import { Block } from '@slack/bolt';
 
 export class DailySchedulePluginConfigMessages {
   @IsOptional()
   @IsString()
-  title = '*Your schedule today:*';
+  title = 'Your schedule today:';
 
   @IsOptional()
   @IsString()
@@ -25,6 +26,10 @@ export class DailySchedulePluginConfigMessages {
   @IsString()
   timetableRow =
     '・ {{{title}}} ({{{startTime}}} - {{{endTime}}}){{#if classroom}} at {{{classroom}}}{{/if}}{{#if teacher}} by {{{teacher}}}{{/if}}';
+
+  @IsOptional()
+  @IsString()
+  timetableEmpty = 'There are no lessons today.';
 
   @IsOptional()
   @IsString()
@@ -95,42 +100,81 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
   sendReminder(): void {
     this.app.client.chat.postMessage({
       channel: this.appConfig.channelId,
-      mrkdwn: true,
-      text: this.generateDailySchedule(),
+      ...this.generateDailySchedule(),
     });
   }
 
-  generateDailySchedule(): string {
+  generateDailySchedule(): { blocks: Block[]; text: string } {
     const { messages } = this.pluginConfig;
+    const divider = { type: 'divider' } as any;
 
-    let schedule = `${messages.title}\n\n`;
+    let textSchedule = '';
+
+    const blocks = [
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: messages.title,
+        },
+      },
+    ];
+    textSchedule += `*${messages.title}*\n\n`;
+
     let hasPlugin = false;
 
     if (this.dependencies.timetablePlugin instanceof TimetablePlugin) {
+      hasPlugin = true;
+
       const timetablePlugin: TimetablePlugin =
         this.dependencies.timetablePlugin;
-
-      hasPlugin = true;
-      schedule += `${messages.timetableTitle}\n`;
-
       const lessons = timetablePlugin.getLessonsToday();
       const lessonRowTemplate = Handlebars.compile(messages.timetableRow);
+      let timetableDisplay = '';
 
-      for (const lesson of lessons) {
-        schedule +=
-          lessonRowTemplate({
-            ...lesson,
-            startTime: format(lesson.startTime, 'HH:mm'),
-            endTime: format(lesson.endTime, 'HH:mm'),
-          }) + '\n';
+      blocks.push(divider);
+      blocks.push({
+        type: 'header',
+        text: { type: 'plain_text', text: messages.timetableTitle },
+      });
+      textSchedule += `*${messages.timetableTitle}*\n`;
+
+      if (lessons.length > 0) {
+        for (const lesson of lessons) {
+          const row =
+            lessonRowTemplate({
+              ...lesson,
+              startTime: format(lesson.startTime, 'HH:mm'),
+              endTime: format(lesson.endTime, 'HH:mm'),
+            }) + '\n';
+          timetableDisplay += row;
+        }
+      } else {
+        timetableDisplay += messages.timetableEmpty;
       }
+
+      blocks.push({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: timetableDisplay,
+        },
+      });
+      textSchedule += timetableDisplay + '\n\n';
     }
 
     if (!hasPlugin) {
-      schedule += messages.noInformation;
+      textSchedule += `${messages.noInformation}`;
+      blocks.push({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: messages.noInformation,
+        },
+      });
     }
 
-    return schedule;
+    return { blocks, text: textSchedule };
   }
 
   kickoff(): void {

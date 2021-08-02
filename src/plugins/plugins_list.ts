@@ -1,7 +1,9 @@
 import { Type } from 'class-transformer';
 import { IsOptional, IsString, ValidateNested } from 'class-validator';
+import escapeStringRegexp from 'escape-string-regexp';
 import { BasePluginConfig, defaultPluginConfig, Plugin } from '.';
 import { plugins } from '..';
+import { generateExactMatchRegexp } from '../utils/exact-regexp';
 
 export class PluginsListPluginOverride {
   @IsOptional()
@@ -31,7 +33,7 @@ export class PluginsListPlugin extends Plugin<PluginsListPluginConfig> {
 
   async register(): Promise<void> {
     const command = this.pluginConfig.override?.command ?? 'plugins list';
-    this.app.message(command, async ({ say }) => {
+    this.app.message(generateExactMatchRegexp(command), async ({ say }) => {
       const list =
         'Plugins List:\n' +
         plugins

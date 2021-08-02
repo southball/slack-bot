@@ -1,11 +1,11 @@
 import { BasePluginConfig, Plugin } from '.';
+import { CronMessagePlugin } from './cron_message';
 
 export class NullPluginConfig extends BasePluginConfig {}
 
 export class NullPlugin extends Plugin<NullPluginConfig> {
   static id = 'null_plugin';
   static pluginName = 'Null Plugin';
-  static requiredPlugins: string[] = [];
   static configClass = NullPluginConfig;
 
   async init(): Promise<void> {
@@ -21,6 +21,10 @@ export class NullPlugin extends Plugin<NullPluginConfig> {
   }
 
   async unregister(): Promise<void> {
+    return;
+  }
+
+  async onReady(): Promise<void> {
     return;
   }
 }

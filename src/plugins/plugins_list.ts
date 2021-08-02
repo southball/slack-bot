@@ -19,7 +19,6 @@ export class PluginsListPluginConfig extends BasePluginConfig {
 export class PluginsListPlugin extends Plugin<PluginsListPluginConfig> {
   static id = 'plugins_list';
   static pluginName = 'Plugins List';
-  static requiredPlugins: string[] = [];
   static configClass = PluginsListPluginConfig;
 
   async init(): Promise<void> {

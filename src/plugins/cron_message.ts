@@ -80,7 +80,6 @@ const matchFilter = (value: number, filter: number | number[]) => {
 export class CronMessagePlugin extends Plugin<CronMessagePluginConfig> {
   static id = 'cron_message';
   static pluginName = 'Cron Message Plugin';
-  static requiredPlugins: string[] = [];
   static configClass = CronMessagePluginConfig;
 
   timer: Option<NodeJS.Timer> = None;

@@ -33,7 +33,6 @@ export class TextSlashCommandPluginConfig extends BasePluginConfig {
 export class TextSlashCommandPlugin extends Plugin<TextSlashCommandPluginConfig> {
   static id = 'text_slash_command';
   static pluginName = 'Text Slash Command Plugin';
-  static requiredPlugins: string[] = [];
   static configClass = TextSlashCommandPluginConfig;
 
   async init(): Promise<void> {

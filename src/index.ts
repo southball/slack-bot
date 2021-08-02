@@ -5,12 +5,14 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import 'reflect-metadata';
 import { loadConfig } from './config';
-import { defaultPluginConfig, Plugin } from './plugins';
+import { BasePluginConfig, defaultPluginConfig, Plugin } from './plugins';
 import { CronMessagePlugin } from './plugins/cron_message';
+import { DailySchedulePlugin } from './plugins/daily_schedule';
 import { LaunchMessagePlugin } from './plugins/launch_message';
 import { NullPlugin } from './plugins/null';
 import { PluginsListPlugin } from './plugins/plugins_list';
 import { TextSlashCommandPlugin } from './plugins/text_slash_command';
+import { TimetablePlugin } from './plugins/timetable';
 import { fix } from './utils/fix';
 import { stringifyWithCircularReference } from './utils/stringify';
 
@@ -22,6 +24,8 @@ export const plugins = [
   LaunchMessagePlugin,
   PluginsListPlugin,
   TextSlashCommandPlugin,
+  TimetablePlugin,
+  DailySchedulePlugin,
 ];
 
 async function main() {
@@ -38,7 +42,6 @@ async function main() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pluginMap: Map<string, Plugin<any>> = new Map();
   const pluginTypeMap: Map<string, typeof Plugin> = new Map();
-  const enabledPlugins: Set<string> = new Set();
   const loadedPlugins: Set<string> = new Set();
 
   for (const T of plugins) {
@@ -88,38 +91,57 @@ async function main() {
       continue;
     }
     console.log(`Plugin ${T.id} will be loaded. The config is validated.`);
-    enabledPlugins.add(T.id);
-    pluginMap.set(T.id, new T(app, validatedPluginConfig, config));
+    // We know that the type is safe here due to the use of transformAndValidate.
+    pluginMap.set(T.id, new T(app, validatedPluginConfig as any, config));
     pluginTypeMap.set(T.id, T as typeof Plugin);
   }
 
   const loadPlugin = fix<string, void>(
     (loadPlugin) => async (pluginName: string) => {
       console.log(`Attempting to load plugin ${pluginName}.`);
-      if (!enabledPlugins.has(pluginName)) {
+      if (!pluginMap.has(pluginName)) {
         throw new Error(`Plugin ${pluginName} should be enabled but is not.`);
       }
       if (loadedPlugins.has(pluginName)) {
         return;
       }
 
+      const plugin = pluginMap.get(pluginName);
+
       const T = pluginTypeMap.get(pluginName);
-      for (const requiredPlugin of T.requiredPlugins) {
+      for (const [key, pluginClass] of Object.entries(T.requiredPlugins)) {
         console.log(
-          `The plugin ${pluginName} requires the plugin ${requiredPlugin}.`,
+          `The plugin ${pluginName} requires the plugin ${pluginClass.id}.`,
         );
-        await loadPlugin(requiredPlugin);
+        await loadPlugin(pluginClass.id);
+        plugin.dependencies[key] = pluginMap.get(pluginClass.id);
       }
 
-      const plugin = pluginMap.get(pluginName);
       console.log(`Start loading plugin ${pluginName}.`);
       await plugin.register();
       console.log(`Plugin ${pluginName} is loaded.`);
     },
   );
 
-  for (const pluginName of enabledPlugins) {
+  for (const pluginName of pluginMap.keys()) {
     loadPlugin(pluginName);
+  }
+
+  // Inject peer plugins if available
+  for (const pluginClass of pluginTypeMap.values()) {
+    const plugin = pluginMap.get(pluginClass.id);
+    for (const [key, peerPluginClass] of Object.entries(
+      pluginClass.peerPlugins,
+    )) {
+      if (pluginMap.has(peerPluginClass.id)) {
+        plugin.dependencies[key] = pluginMap.get(peerPluginClass.id);
+      }
+    }
+  }
+
+  // Call onReady function for each
+  for (const plugin of pluginMap.values()) {
+    await plugin.onReady();
   }
 
   await app.start();

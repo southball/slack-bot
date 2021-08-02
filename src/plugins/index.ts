@@ -30,9 +30,19 @@ export abstract class Plugin<PluginConfig extends BasePluginConfig> {
   static pluginName: string;
 
   /**
-   * The ID of the lists of plugins required before this plugin is loaded.
+   * The list of plugins required before this plugin is loaded.
    */
-  static requiredPlugins: string[];
+  static requiredPlugins: { [key: string]: typeof Plugin } = {};
+
+  /**
+   * The list of plugins injected to the plugin if available
+   */
+  static peerPlugins: { [key: string]: typeof Plugin } = {};
+
+  /**
+   * The map of plugins generated.
+   */
+  dependencies: { [key: string]: Plugin<BasePluginConfig> } = {};
 
   /**
    * Class object for the config. Used for config validation and transformation.
@@ -83,4 +93,11 @@ export abstract class Plugin<PluginConfig extends BasePluginConfig> {
    * This function should NOT remove user data.
    */
   abstract unregister(): Promise<void>;
+
+  /**
+   * This function will be called when all plugins are loaded.
+   */
+  async onReady(): Promise<void> {
+    return;
+  }
 }

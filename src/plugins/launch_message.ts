@@ -9,7 +9,6 @@ export class LaunchMessagePluginConfig extends BasePluginConfig {
 export class LaunchMessagePlugin extends Plugin<LaunchMessagePluginConfig> {
   static id = 'launch_message';
   static pluginName = 'Launch Message Plugin';
-  static requiredPlugins: string[] = [];
   static configClass = LaunchMessagePluginConfig;
 
   async init(): Promise<void> {

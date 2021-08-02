@@ -21,7 +21,7 @@ export class LaunchMessagePlugin extends Plugin<LaunchMessagePluginConfig> {
 
   async register(): Promise<void> {
     this.app.client.chat.postMessage({
-      channel: this.appConfig.channel_id,
+      channel: this.appConfig.channelId,
       text: this.pluginConfig.message,
     });
   }

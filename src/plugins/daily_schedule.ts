@@ -94,7 +94,7 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
 
   sendReminder(): void {
     this.app.client.chat.postMessage({
-      channel: this.appConfig.channel_id,
+      channel: this.appConfig.channelId,
       mrkdwn: true,
       text: this.generateDailySchedule(),
     });

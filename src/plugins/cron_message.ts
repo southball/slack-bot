@@ -138,7 +138,7 @@ export class CronMessagePlugin extends Plugin<CronMessagePluginConfig> {
 
     for (const message of messages) {
       this.app.client.chat.postMessage({
-        channel: this.appConfig.channel_id,
+        channel: this.appConfig.channelId,
         text: message,
       });
     }

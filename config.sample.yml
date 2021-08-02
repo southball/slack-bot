@@ -1,6 +1,6 @@
 # The channel ID of the channel that the bot will operate in.
 # This bot is designed to work in 1 main channel.
-channel_id: ""
+channelId: ""
 
 # Settings for different plugins
 plugins:

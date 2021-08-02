@@ -86,7 +86,7 @@ class TimetablePluginConfigRemindBefore {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  before_minutes?: number;
+  beforeMinutes?: number;
 
   @IsString()
   @IsOptional()
@@ -108,7 +108,7 @@ export class TimetablePluginConfig extends BasePluginConfig {
   @IsOptional()
   @ValidateNested()
   @Type(() => TimetablePluginConfigRemindBefore)
-  remind_before?: TimetablePluginConfigRemindBefore;
+  remindBefore?: TimetablePluginConfigRemindBefore;
 }
 
 // Used to describe a lesson today.
@@ -138,9 +138,9 @@ export class TimetablePlugin extends Plugin<TimetablePluginConfig> {
   }
 
   async register(): Promise<void> {
-    if (this.pluginConfig.remind_before?.enabled) {
+    if (this.pluginConfig.remindBefore?.enabled) {
       const template =
-        this.pluginConfig.remind_before?.template ?? defaultTemplate;
+        this.pluginConfig.remindBefore?.template ?? defaultTemplate;
       this.compiledTemplate = Handlebars.compile(template);
 
       this.timer = Option(setInterval(() => this.kickoff_reminder(), 60000));
@@ -200,7 +200,7 @@ export class TimetablePlugin extends Plugin<TimetablePluginConfig> {
     for (const lesson of lessons) {
       // We want to send the remainder [N, N+1] minutes before the lesson.
       const remindMinutes =
-        (this.pluginConfig.remind_before?.before_minutes ?? 15) + 1;
+        (this.pluginConfig.remindBefore?.beforeMinutes ?? 15) + 1;
       const remindTime = subMinutes(lesson.startTime, remindMinutes);
       const remindEndTime = addMinutes(remindTime, 1);
 
@@ -220,7 +220,7 @@ export class TimetablePlugin extends Plugin<TimetablePluginConfig> {
 
     for (const message of messages) {
       this.app.client.chat.postMessage({
-        channel: this.appConfig.channel_id,
+        channel: this.appConfig.channelId,
         text: message,
       });
     }

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { parse } from 'yaml';
 
 export type Config = {
-  channel_id: string;
+  channelId: string;
   plugins: { [plugin_id: string]: unknown };
 };
 

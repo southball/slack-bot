@@ -36,10 +36,6 @@ plugins:
   #     # You can change the keyword that triggers the command.
   #     command: "plugins list"
 
-  # # This is a plugin for debug purposes and serves no function.
-  # null_plugin:
-  #   enabled: false
-  
   # # This is a plugin for replying to slash commands with simple messages.
   # text_slash_command:
   #   enabled: true

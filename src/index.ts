@@ -5,11 +5,10 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import 'reflect-metadata';
 import { loadConfig } from './config';
-import { BasePluginConfig, defaultPluginConfig, Plugin } from './plugins';
+import { defaultPluginConfig, Plugin } from './plugins';
 import { CronMessagePlugin } from './plugins/cron_message';
 import { DailySchedulePlugin } from './plugins/daily_schedule';
 import { LaunchMessagePlugin } from './plugins/launch_message';
-import { NullPlugin } from './plugins/null';
 import { PluginsListPlugin } from './plugins/plugins_list';
 import { TextSlashCommandPlugin } from './plugins/text_slash_command';
 import { TimetablePlugin } from './plugins/timetable';
@@ -19,7 +18,6 @@ import { stringifyWithCircularReference } from './utils/stringify';
 dotenv.config();
 
 export const plugins = [
-  NullPlugin,
   CronMessagePlugin,
   LaunchMessagePlugin,
   PluginsListPlugin,

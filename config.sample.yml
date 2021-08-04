@@ -4,10 +4,10 @@ channelId: ""
 
 # Settings for different plugins
 plugins:
-  # # Send a message to the channel when the bot is launched.
-  # launch_message:
-  #   enabled: true
-  #   message: "The bot is launched."
+  # Send a message to the channel when the bot is launched.
+  launch_message:
+    enabled: true
+    message: "The bot is launched."
 
   # # Send message at specific times.
   # cron_message:
@@ -50,3 +50,47 @@ plugins:
   #       replies:
   #         - "Rule 1: blah blah blah"
   #         - "Rule 2: blah blah blah"
+
+  # timetable:
+  #   enabled: true
+  #   remindBefore:
+  #     # Whether to remind before the lesson or not.
+  #     enabled: true
+  #     # How many minutes to remind before the lesson.
+  #     beforeMinutes: 15
+  #     # Template of the reminder to send before the lesson.
+  #     template: >-
+  #       {{{title}}} ({{{startTime}}} - {{{endTime}}}){{#if teacher}} by {{{teacher}}}{{/if}} will start soon{{#if classroom}} at {{{classroom}}}{{/if}}.
+  #   # When each period starts and ends.
+  #   periods:
+  #     - period: 1
+  #       startTime: "08:45"
+  #       endTime: "10:15"
+  #     - period: 2
+  #       startTime: "10:30"
+  #       endTime: "12:00"
+  #   # List of lessons during the week.
+  #   lessons:
+  #     - weekday: 1
+  #       period: 3
+  #       title: "Calculus I"
+  #       classroom: "101"
+  #       teacher: "Professor A."
+
+  # daily_schedule:
+  #   enabled: true
+  #   # Whether to enable the command to show the daily schedule or not.
+  #   enableCommand: true
+  #   # The command to show the daily schedule.
+  #   command: "schedule today"
+  #   # Whether to enable the daily schedule send every day.
+  #   enableReminder: true
+  #   # When to show the daily schedule every day.
+  #   scheduleTime: "06:01"
+  #   # # If needed, your can override the default messages here.
+  #   # messages:
+  #   #   title: "Your schedule today:"
+  #   #   timetableTitle: "Timetable:"
+  #   #   timetableRow:  "・ {{{title}}} ({{{startTime}}} - {{{endTime}}}){{#if classroom}} at {{{classroom}}}{{/if}}{{#if teacher}} by {{{teacher}}}{{/if}}"
+  #   #   timetableEmpty: "There are no lessons today."
+  #   #   noInformation: "No plugins can provide information for the schedule."

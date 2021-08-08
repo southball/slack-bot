@@ -1,0 +1,10 @@
+[book]
+authors = ["Southball"]
+language = "en"
+multilingual = false
+src = "src"
+title = "southball/slack-bot Documentation"
+
+[build]
+build-dir = "../docs"
+create-missing = true

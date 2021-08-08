@@ -29,6 +29,7 @@
     "build": "webpack",
     "prepare": "husky install",
     "format": "prettier --write \"src/**/*.ts\"",
+    "format:readme": "prettier --write --parser mdx --prose-wrap always README.md",
     "lint:fix": "eslint --cache --fix \"src/**/*.ts\""
   },
   "dependencies": {
@@ -49,6 +50,9 @@
     "*.ts": [
       "eslint --cache --fix",
       "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write --parser mdx --prose-wrap always"
     ]
   }
 }

@@ -9,14 +9,9 @@ messages can also be set.
 
 ## Plugins
 
+More information for the plugin is available at
+[the guide book](https://southball.dev/slack-bot).  
 See `config.sample.yml` for how to configure these plugins.
-
-- `cron_message`
-- `daily_schedule`
-- `launch_message`
-- `plugins_list`
-- `text_slash_command`
-- `timetable`
 
 ## Instructions
 

@@ -98,12 +98,12 @@ export class TimetablePluginConfig extends BasePluginConfig {
   @ValidateNested()
   @Type(() => TimetablePluginConfigPeriod)
   @ArrayUnique(({ period }: TimetablePluginConfigPeriod) => period)
-  periods: TimetablePluginConfigPeriod[];
+  periods: TimetablePluginConfigPeriod[] = [];
 
   @IsArray()
   @ValidateNested()
   @Type(() => TimetablePluginConfigLesson)
-  lessons: TimetablePluginConfigLesson[];
+  lessons: TimetablePluginConfigLesson[] = [];
 
   @IsOptional()
   @ValidateNested()

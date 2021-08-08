@@ -8,5 +8,5 @@
 .env
 .eslintcache
 
-/.config_test.yml
+/config.test.yml
 /.env.test

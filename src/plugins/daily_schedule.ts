@@ -12,7 +12,7 @@ import { Type } from 'class-transformer';
 import { TimetablePlugin } from './timetable';
 import * as Handlebars from 'handlebars';
 import { Block } from '@slack/bolt';
-import escapeStringRegexp from 'escape-string-regexp';
+import * as escapeStringRegexp from 'escape-string-regexp';
 import { generateExactMatchRegexp } from '../utils/exact-regexp';
 
 export class DailySchedulePluginConfigMessages {

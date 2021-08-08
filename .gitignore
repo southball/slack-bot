@@ -7,3 +7,6 @@
 
 .env
 .eslintcache
+
+/.config_test.yml
+/.env.test

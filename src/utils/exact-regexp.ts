@@ -1,4 +1,4 @@
-import escapeStringRegexp from 'escape-string-regexp';
+import * as escapeStringRegexp from 'escape-string-regexp';
 
 /**
  * Generates a RegExp that matches the passed string exactly.

@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import 'reflect-metadata';
 import { loadConfig } from './config';
-import { defaultPluginConfig, Plugin } from './plugins';
+import { BasePluginConfig, defaultPluginConfig, Plugin } from './plugins';
 import { CronMessagePlugin } from './plugins/cron_message';
 import { DailySchedulePlugin } from './plugins/daily_schedule';
 import { LaunchMessagePlugin } from './plugins/launch_message';
@@ -48,8 +48,8 @@ async function main() {
       throw new Error(`Config for plugin ${T.id} should be an object.`);
     }
     console.log(`Validating config for plugin ${T.id}...`);
-    const validatedPluginConfig = await transformAndValidate(
-      T.configClass,
+    const validatedPluginConfig: any = await transformAndValidate(
+      T.configClass as any,
       pluginConfig,
       {
         validator: {

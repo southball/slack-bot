@@ -11,7 +11,10 @@ messages can also be set.
 
 More information for the plugin is available at
 [the guide book](https://southball.dev/slack-bot).  
-See `config.sample.yml` for how to configure these plugins.
+Especially see
+[the configuration guide](https://southball.dev/slack-bot/config.html) to find
+more information on how to configure the Slack app properly. See
+`config.sample.yml` for how to configure these plugins.
 
 ## Instructions
 

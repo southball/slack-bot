@@ -27,6 +27,7 @@ import {
 } from 'date-fns';
 import { Option } from 'monapt';
 import { BasePluginConfig, Plugin } from '.';
+import { DailySchedulePlugin } from './daily_schedule';
 
 const defaultTemplate = `{{{title}}} ({{{startTime}}} - {{{endTime}}}){{#if teacher}} by {{{teacher}}}{{/if}} will start soon{{#if classroom}} at {{{classroom}}}{{/if}}.`;
 

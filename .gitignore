@@ -10,3 +10,4 @@
 
 /config.test.yml
 /.env.test
+/database.*.json

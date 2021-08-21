@@ -5,13 +5,14 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import 'reflect-metadata';
 import { loadConfig } from './config';
-import { BasePluginConfig, defaultPluginConfig, Plugin } from './plugins';
+import { defaultPluginConfig, Plugin } from './plugins';
 import { CronMessagePlugin } from './plugins/cron_message';
-import { DailySchedulePlugin } from './plugins/daily_schedule';
 import { LaunchMessagePlugin } from './plugins/launch_message';
 import { PluginsListPlugin } from './plugins/plugins_list';
 import { TextSlashCommandPlugin } from './plugins/text_slash_command';
 import { TimetablePlugin } from './plugins/timetable';
+import { DailySchedulePlugin } from './plugins/daily_schedule';
+import { TodoPlugin } from './plugins/todo';
 import { fix } from './utils/fix';
 import { stringifyWithCircularReference } from './utils/stringify';
 
@@ -24,6 +25,7 @@ export const plugins = [
   TextSlashCommandPlugin,
   TimetablePlugin,
   DailySchedulePlugin,
+  TodoPlugin,
 ];
 
 async function main() {
@@ -41,6 +43,8 @@ async function main() {
   const pluginMap: Map<string, Plugin<any>> = new Map();
   const pluginTypeMap: Map<string, typeof Plugin> = new Map();
   const loadedPlugins: Set<string> = new Set();
+
+  console.log(plugins);
 
   for (const T of plugins) {
     const pluginConfig: unknown = config.plugins[T.id] ?? defaultPluginConfig;

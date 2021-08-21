@@ -12,8 +12,8 @@ import { Type } from 'class-transformer';
 import { TimetablePlugin } from './timetable';
 import * as Handlebars from 'handlebars';
 import { Block } from '@slack/bolt';
-import * as escapeStringRegexp from 'escape-string-regexp';
 import { generateExactMatchRegexp } from '../utils/exact-regexp';
+import { TodoPlugin } from './todo';
 
 export class DailySchedulePluginConfigMessages {
   @IsOptional()
@@ -36,6 +36,18 @@ export class DailySchedulePluginConfigMessages {
   @IsOptional()
   @IsString()
   noInformation = 'No plugins can provide information for the schedule.';
+
+  @IsOptional()
+  @IsString()
+  todoTitle = 'Todo:';
+
+  @IsOptional()
+  @IsString()
+  todoRow = '・ {{{text}}}';
+
+  @IsOptional()
+  @IsString()
+  todoEmpty = 'No todos left.';
 }
 
 export class DailySchedulePluginConfig extends BasePluginConfig {
@@ -65,7 +77,10 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
   static id = 'daily_schedule';
   static pluginName = 'Daily Schedule Plugin';
   static configClass = DailySchedulePluginConfig;
-  static peerPlugins = { timetablePlugin: TimetablePlugin as typeof Plugin };
+  static peerPlugins = {
+    timetablePlugin: TimetablePlugin as typeof Plugin,
+    todoPlugin: TodoPlugin as typeof Plugin,
+  };
 
   timer: Option<NodeJS.Timer> = None;
 
@@ -164,6 +179,40 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
         },
       });
       textSchedule += timetableDisplay + '\n\n';
+    }
+
+    if (this.dependencies.todoPlugin instanceof TodoPlugin) {
+      hasPlugin = true;
+
+      const todoPlugin: TodoPlugin = this.dependencies.todoPlugin;
+      const todos = todoPlugin.database.get();
+      const todoRowTemplate = Handlebars.compile(messages.todoRow);
+      let todoDisplay = '';
+
+      blocks.push(divider);
+      blocks.push({
+        type: 'header',
+        text: { type: 'plain_text', text: messages.todoTitle },
+      });
+      textSchedule += `*${messages.todoTitle}*\n`;
+
+      if (todos.length > 0) {
+        for (const todo of todos) {
+          const row = todoRowTemplate(todo) + '\n';
+          todoDisplay += row;
+        }
+      } else {
+        todoDisplay += messages.todoEmpty;
+      }
+
+      blocks.push({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: todoDisplay,
+        },
+      });
+      textSchedule += todoDisplay + '\n\n';
     }
 
     if (!hasPlugin) {

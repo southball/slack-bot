@@ -111,8 +111,4 @@ export class TodoPlugin extends Plugin<TodoPluginConfig> {
   async unregister(): Promise<void> {
     return;
   }
-
-  async onReady(): Promise<void> {
-    return;
-  }
 }

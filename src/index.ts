@@ -15,6 +15,7 @@ import { DailySchedulePlugin } from './plugins/daily_schedule';
 import { TodoPlugin } from './plugins/todo';
 import { fix } from './utils/fix';
 import { stringifyWithCircularReference } from './utils/stringify';
+import { CalendarPlugin } from './plugins/calendar';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ export const plugins = [
   TimetablePlugin,
   DailySchedulePlugin,
   TodoPlugin,
+  CalendarPlugin,
 ] as typeof Plugin[];
 
 /**

@@ -7,13 +7,14 @@ import {
 } from 'class-validator';
 import { None, Option } from 'monapt';
 import { BasePluginConfig, Plugin } from '.';
-import { isBefore, addMinutes, parse, format } from 'date-fns';
+import { isBefore, addMinutes, parse, format, isToday } from 'date-fns';
 import { Type } from 'class-transformer';
 import { TimetablePlugin } from './timetable';
 import * as Handlebars from 'handlebars';
 import { Block } from '@slack/bolt';
 import { generateExactMatchRegexp } from '../utils/exact-regexp';
 import { TodoPlugin } from './todo';
+import { CalendarPlugin } from './calendar';
 
 export class DailySchedulePluginConfigMessages {
   @IsOptional()
@@ -48,6 +49,18 @@ export class DailySchedulePluginConfigMessages {
   @IsOptional()
   @IsString()
   todoEmpty = 'No todos left.';
+
+  @IsOptional()
+  @IsString()
+  calendarTitle = 'Calendar:';
+
+  @IsOptional()
+  @IsString()
+  calendarRow = '・ {{{summary}}} ({{{start}}} - {{{end}}})';
+
+  @IsOptional()
+  @IsString()
+  calendarEmpty = 'No calendar events today.';
 }
 
 export class DailySchedulePluginConfig extends BasePluginConfig {
@@ -78,7 +91,7 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
   static pluginName = 'Daily Schedule Plugin';
   static configClass = DailySchedulePluginConfig;
 
-  peerPluginIDs = ['timetable', 'todo_plugin'];
+  peerPluginIDs = ['timetable', 'todo_plugin', 'calendar'];
 
   timer: Option<NodeJS.Timer> = None;
 
@@ -97,6 +110,10 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
         async () => this.sendReminder(),
       );
     }
+    if (this.pluginConfig.enableReminder) {
+      this.timer = Option(setInterval(() => this.kickoff(), 60000));
+      this.kickoff();
+    }
     return;
   }
 
@@ -105,27 +122,20 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
     return;
   }
 
-  async onReady(): Promise<void> {
-    if (this.pluginConfig.enableReminder) {
-      this.timer = Option(setInterval(() => this.kickoff(), 60000));
-      this.kickoff();
-    }
-    return;
-  }
-
-  sendReminder(): void {
+  async sendReminder(): Promise<void> {
     this.app.client.chat.postMessage({
       channel: this.appConfig.channelId,
-      ...this.generateDailySchedule(),
+      ...(await this.generateDailySchedule()),
     });
   }
 
-  generateDailySchedule(): { blocks: Block[]; text: string } {
+  async generateDailySchedule(): Promise<{ blocks: Block[]; text: string }> {
     const { messages } = this.pluginConfig;
     const divider = { type: 'divider' } as any;
 
-    const todoPlugin = this.peerPlugins[0] as TodoPlugin | undefined;
-    const timetablePlugin = this.peerPlugins[1] as TimetablePlugin | undefined;
+    const timetablePlugin = this.peerPlugins[0] as TimetablePlugin | undefined;
+    const todoPlugin = this.peerPlugins[1] as TodoPlugin | undefined;
+    const calendarPlugin = this.peerPlugins[2] as CalendarPlugin | undefined;
 
     let textSchedule = '';
 
@@ -211,6 +221,45 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
         },
       });
       textSchedule += todoDisplay + '\n\n';
+    }
+
+    if (calendarPlugin instanceof CalendarPlugin) {
+      hasPlugin = true;
+
+      const calendarEvents = (await calendarPlugin.loadEvents())
+        .filter((event) => isToday(event.start))
+        .map((event) => ({
+          ...event,
+          start: format(event.start, calendarPlugin.pluginConfig.dateFormat),
+          end: format(event.end, calendarPlugin.pluginConfig.dateFormat),
+        }));
+      const calendarRowTemplate = Handlebars.compile(messages.calendarRow);
+      let calendarDisplay = '';
+
+      blocks.push(divider);
+      blocks.push({
+        type: 'header',
+        text: { type: 'plain_text', text: messages.calendarTitle },
+      });
+      textSchedule += `*${messages.calendarTitle}*`;
+
+      if (calendarEvents.length > 0) {
+        for (const event of calendarEvents) {
+          const row = calendarRowTemplate(event) + '\n';
+          calendarDisplay += row;
+        }
+      } else {
+        calendarDisplay += messages.calendarEmpty;
+      }
+
+      blocks.push({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: calendarDisplay,
+        },
+      });
+      textSchedule += calendarDisplay + '\n\n';
     }
 
     if (!hasPlugin) {

@@ -4,7 +4,7 @@ import { ValidationError } from 'class-validator';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import 'reflect-metadata';
-import { loadConfig } from './config';
+import { Config, loadConfig } from './config';
 import { defaultPluginConfig, Plugin } from './plugins';
 import { CronMessagePlugin } from './plugins/cron_message';
 import { LaunchMessagePlugin } from './plugins/launch_message';
@@ -26,8 +26,44 @@ export const plugins = [
   TimetablePlugin,
   DailySchedulePlugin,
   TodoPlugin,
-];
+] as typeof Plugin[];
 
+/**
+ * This function cleans up errors by class-transformer-validator to make the error message more readable.
+ */
+function cleanupValidationError(errors: any): any {
+  if (
+    Array.isArray(errors) &&
+    errors.every((error) => error instanceof ValidationError)
+  ) {
+    /**
+     * This function attempts to extract only the relevant part of the
+     * ValidationError.
+     */
+    const shake = fix<ValidationError, ValidationError[]>(
+      (shake) =>
+        (error: ValidationError): ValidationError[] => {
+          const result = [];
+          if (typeof error.constraints !== 'undefined') {
+            result.push(error);
+          }
+          if (Array.isArray(error.children)) {
+            for (const child of error.children) {
+              result.push(...shake(child));
+            }
+          }
+          return result;
+        },
+    );
+    throw errors.map(shake).flat();
+  } else {
+    throw errors;
+  }
+}
+
+/**
+ * The entry point of the application.
+ */
 async function main() {
   const botToken = process.env.SLACK_BOT_TOKEN;
   const appToken = process.env.SLACK_APP_TOKEN;
@@ -41,16 +77,18 @@ async function main() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pluginMap: Map<string, Plugin<any>> = new Map();
-  const pluginTypeMap: Map<string, typeof Plugin> = new Map();
-  const loadedPlugins: Set<string> = new Set();
-
-  console.log(plugins);
 
   for (const T of plugins) {
     const pluginConfig: unknown = config.plugins[T.id] ?? defaultPluginConfig;
+
     if (typeof pluginConfig !== 'object') {
       throw new Error(`Config for plugin ${T.id} should be an object.`);
     }
+
+    if (pluginConfig['enabled'] !== true) {
+      continue;
+    }
+
     console.log(`Validating config for plugin ${T.id}...`);
     const validatedPluginConfig: any = await transformAndValidate(
       T.configClass as any,
@@ -60,97 +98,46 @@ async function main() {
           forbidUnknownValues: true,
         },
       },
-    ).catch((errors) => {
-      if (
-        Array.isArray(errors) &&
-        errors.every((error) => error instanceof ValidationError)
-      ) {
-        /**
-         * This function attempts to extract only the relevant part of the
-         * ValidationError.
-         */
-        const shake = fix<ValidationError, ValidationError[]>(
-          (shake) =>
-            (error: ValidationError): ValidationError[] => {
-              const result = [];
-              if (typeof error.constraints !== 'undefined') {
-                result.push(error);
-              }
-              if (Array.isArray(error.children)) {
-                for (const child of error.children) {
-                  result.push(...shake(child));
-                }
-              }
-              return result;
-            },
-        );
-        throw errors.map(shake).flat();
-      } else {
-        throw errors;
-      }
-    });
-    if (!validatedPluginConfig.enabled) {
-      continue;
-    }
+    ).catch(cleanupValidationError);
+
     console.log(`Plugin ${T.id} will be loaded. The config is validated.`);
-    // We know that the type is safe here due to the use of transformAndValidate.
-    pluginMap.set(T.id, new T(app, validatedPluginConfig as any, config));
-    pluginTypeMap.set(T.id, T as typeof Plugin);
+    const plugin: Plugin<any> = new (T as any)(
+      app,
+      validatedPluginConfig as any,
+      config,
+    );
+    pluginMap.set(T.id, plugin);
   }
 
-  const loadPlugin = fix<string, void>(
-    (loadPlugin) => async (pluginName: string) => {
-      console.log(`Attempting to load plugin ${pluginName}.`);
-      if (!pluginMap.has(pluginName)) {
-        throw new Error(`Plugin ${pluginName} should be enabled but is not.`);
-      }
-      if (loadedPlugins.has(pluginName)) {
-        return;
-      }
-
-      const plugin = pluginMap.get(pluginName);
-
-      const T = pluginTypeMap.get(pluginName);
-      for (const [key, pluginClass] of Object.entries(T.requiredPlugins)) {
-        console.log(
-          `The plugin ${pluginName} requires the plugin ${pluginClass.id}.`,
+  // Check whether all required plugins are loaded.
+  for (const [pluginID, plugin] of pluginMap.entries()) {
+    for (const requiredPluginID of plugin.requiredPluginIDs) {
+      if (!pluginMap.has(requiredPluginID)) {
+        throw new Error(
+          `Error: plugin ${pluginID} requires plugin ${requiredPluginID} but it is not loaded.`,
         );
-        await loadPlugin(pluginClass.id);
-        plugin.dependencies[key] = pluginMap.get(pluginClass.id);
-      }
-
-      console.log(`Start loading plugin ${pluginName}.`);
-      await plugin.register();
-      console.log(`Plugin ${pluginName} is loaded.`);
-    },
-  );
-
-  for (const pluginName of pluginMap.keys()) {
-    loadPlugin(pluginName);
-  }
-
-  // Inject peer plugins if available
-  for (const pluginClass of pluginTypeMap.values()) {
-    const plugin = pluginMap.get(pluginClass.id);
-    for (const [key, peerPluginClass] of Object.entries(
-      pluginClass.peerPlugins,
-    )) {
-      if (pluginMap.has(peerPluginClass.id)) {
-        plugin.dependencies[key] = pluginMap.get(peerPluginClass.id);
       }
     }
   }
 
-  // Call onReady function for each
+  // Inject required plugins and peer plugins
   for (const plugin of pluginMap.values()) {
-    await plugin.onReady();
+    plugin.requiredPlugins = plugin.requiredPluginIDs.map((id) =>
+      pluginMap.get(id),
+    );
+    plugin.peerPlugins = plugin.peerPluginIDs.map((id) => pluginMap.get(id));
+  }
+
+  // Call register function for all plugins
+  for (const plugin of pluginMap.values()) {
+    plugin.register();
   }
 
   await app.start();
   console.log('The app has started.');
 }
 
-main().catch((error) => {
+main().catch((error: any) => {
   console.error(
     'Critical error during the operation of bot. See error.log for more details.',
   );

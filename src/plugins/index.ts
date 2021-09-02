@@ -17,10 +17,22 @@ export function isBasePluginConfig(
   return typeof config === 'object' && typeof config['enabled'] === 'boolean';
 }
 
+/**
+ * The base class for all plugins.
+ * The lifecycle of the plugins are:
+ * - constructor is called
+ * - init() is called
+ * - requiredPlugins and peerPlugins are injected
+ * - register() is called
+ *
+ * When the plugin is to be disabled,
+ * - unregister() is called
+ * - uninit() is called
+ */
 export abstract class Plugin<PluginConfig extends BasePluginConfig> {
   /**
    * The ID for the plugin.
-   * Used for identifying the plugin and
+   * Used for identifying the plugin.
    */
   static id: string;
 
@@ -30,24 +42,29 @@ export abstract class Plugin<PluginConfig extends BasePluginConfig> {
   static pluginName: string;
 
   /**
-   * The list of plugins required before this plugin is loaded.
-   */
-  static requiredPlugins: { [key: string]: typeof Plugin } = {};
-
-  /**
-   * The list of plugins injected to the plugin if available
-   */
-  static peerPlugins: { [key: string]: typeof Plugin } = {};
-
-  /**
-   * The map of plugins generated.
-   */
-  dependencies: { [key: string]: Plugin<BasePluginConfig> } = {};
-
-  /**
    * Class object for the config. Used for config validation and transformation.
    */
   static configClass: typeof BasePluginConfig;
+
+  /**
+   * The IDs of plugins that are required for the plugin to function.
+   */
+  requiredPluginIDs: string[] = [];
+
+  /**
+   * The IDs of peer plugins required.
+   */
+  peerPluginIDs: string[] = [];
+
+  /**
+   * The plugins required injected.
+   */
+  requiredPlugins: Plugin<any>[] = [];
+
+  /**
+   * Peer plugins injected.
+   */
+  peerPlugins: Plugin<any>[] = [];
 
   /**
    * The App object in @slack/bolt.
@@ -93,11 +110,4 @@ export abstract class Plugin<PluginConfig extends BasePluginConfig> {
    * This function should NOT remove user data.
    */
   abstract unregister(): Promise<void>;
-
-  /**
-   * This function will be called when all plugins are loaded.
-   */
-  async onReady(): Promise<void> {
-    return;
-  }
 }

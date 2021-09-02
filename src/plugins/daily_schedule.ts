@@ -77,10 +77,8 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
   static id = 'daily_schedule';
   static pluginName = 'Daily Schedule Plugin';
   static configClass = DailySchedulePluginConfig;
-  static peerPlugins = {
-    timetablePlugin: TimetablePlugin as typeof Plugin,
-    todoPlugin: TodoPlugin as typeof Plugin,
-  };
+
+  peerPluginIDs = ['timetable', 'todo_plugin'];
 
   timer: Option<NodeJS.Timer> = None;
 
@@ -126,6 +124,9 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
     const { messages } = this.pluginConfig;
     const divider = { type: 'divider' } as any;
 
+    const todoPlugin = this.peerPlugins[0] as TodoPlugin | undefined;
+    const timetablePlugin = this.peerPlugins[1] as TimetablePlugin | undefined;
+
     let textSchedule = '';
 
     const blocks = [
@@ -141,11 +142,9 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
 
     let hasPlugin = false;
 
-    if (this.dependencies.timetablePlugin instanceof TimetablePlugin) {
+    if (timetablePlugin instanceof TimetablePlugin) {
       hasPlugin = true;
 
-      const timetablePlugin: TimetablePlugin =
-        this.dependencies.timetablePlugin;
       const lessons = timetablePlugin.getLessonsToday();
       const lessonRowTemplate = Handlebars.compile(messages.timetableRow);
       let timetableDisplay = '';
@@ -181,10 +180,9 @@ export class DailySchedulePlugin extends Plugin<DailySchedulePluginConfig> {
       textSchedule += timetableDisplay + '\n\n';
     }
 
-    if (this.dependencies.todoPlugin instanceof TodoPlugin) {
+    if (todoPlugin instanceof TodoPlugin) {
       hasPlugin = true;
 
-      const todoPlugin: TodoPlugin = this.dependencies.todoPlugin;
       const todos = todoPlugin.database.get();
       const todoRowTemplate = Handlebars.compile(messages.todoRow);
       let todoDisplay = '';

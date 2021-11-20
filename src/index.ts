@@ -1,17 +1,31 @@
 import * as dotenv from 'dotenv';
-import { App } from '@slack/bolt';
+import express from 'express';
+import { createApp } from './app';
 
 dotenv.config();
 
-const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
-  appToken: process.env.SLACK_APP_TOKEN,
-  socketMode: true,
-});
+const expressApp = express();
 
 async function main() {
-  await app.start();
+  let slackApp = await createApp();
+  await slackApp.start();
+  console.log('App started.');
+
+  expressApp.get('/restart', async (req, res) => {
+    try {
+      await slackApp.stop();
+      slackApp = await createApp();
+      await slackApp.start();
+      console.log('App started.');
+    } catch {
+      res.json({ ok: false });
+      return;
+    }
+    res.json({ ok: true });
+  });
+
+  console.log('Server listening at port 3000.');
+  expressApp.listen(3000);
 }
 
 main();

@@ -1,5 +1,5 @@
-import { Storage } from './storage';
 import * as fs from 'fs';
+import { Storage } from './storage';
 
 const generateFilename = () => `test-${Math.random()}.sqlite3`;
 

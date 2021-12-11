@@ -1,5 +1,6 @@
 import { App } from '@slack/bolt';
 import { cronMessageModule } from './modules/cronMessage';
+import { pingModule } from './modules/ping';
 
 export async function createApp(): Promise<App> {
   const app = new App({
@@ -10,6 +11,7 @@ export async function createApp(): Promise<App> {
   });
 
   await cronMessageModule(app);
+  await pingModule(app);
 
   return app;
 }

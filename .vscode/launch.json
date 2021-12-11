@@ -1,0 +1,36 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Server",
+      "port": 3000,
+      "runtimeExecutable": "yarn",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "start"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Client",
+      "port": 4000,
+      "runtimeExecutable": "yarn",
+      "cwd": "${workspaceFolder}/app",
+      "console": "integratedTerminal",
+      "args": [
+        "start"
+      ],
+      "env": {
+        "PORT": "4000",
+        "SKIP_PREFLIGHT_CHECK": "true"
+      }
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+#/bin/bash
+set -e
+echo "lint-staged:slack-bot-server:"
+yarn workspace slack-bot-server run precommit

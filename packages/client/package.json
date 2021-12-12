@@ -1,5 +1,5 @@
 {
-  "name": "app",
+  "name": "slack-bot-client",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -17,6 +17,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "slack-bot-server": "0.1.0",
     "typescript": "^4.5.3",
     "web-vitals": "^1.0.1"
   },
@@ -43,8 +44,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "eslint-config-react-app": "^6.0.0"
   }
 }

@@ -5,18 +5,26 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import * as APITypes from 'slack-bot-server/src/api/types';
 
 const API_URL = (key: string) => `http://localhost:3000/api/${key}`;
 
 function App() {
+  const [statusText, setStatusText] = React.useState<string>('');
   const [optionName, setOptionName] = React.useState<string>('');
   const [value, setValue] = React.useState<string>('');
 
   const loadOption = async () => {
     if (optionName) {
       const request = await fetch(API_URL(optionName));
-      const json = await request.json();
-      setValue(JSON.stringify(json.data, null, 4))
+      const json = (await request.json()) as APITypes.HTTPDataResponse<string>;
+      if (json.success) {
+        setValue(JSON.stringify(json.data, null, 4));
+      } else {
+        setStatusText(`Failed to fetch option ${optionName}: ${json.error}`);
+      }
+    } else {
+      setStatusText('No option name is selected.');
     }
   };
 
@@ -26,13 +34,17 @@ function App() {
         console.log(value);
         const _object = JSON.parse(value);
         console.log(_object);
-        await fetch(API_URL(optionName), {
-          method: "POST",
-          headers: {'Content-Type': 'application/json'},
-          body: value
-        })
+        const request = await fetch(API_URL(optionName), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: value,
+        });
+        const json = await request.json() as APITypes.HTTPSuccessResponse;
+        if (json.success) {
+          setStatusText(`Saved setting for ${optionName} successfully.`);
+        }
       } catch (err) {
-        alert("Invalid JSON!");
+        alert('Invalid JSON!');
       }
     }
   };
@@ -43,11 +55,21 @@ function App() {
     >
       <Typography variant="h4">Settings Editor</Typography>
 
+      {statusText &&<Box sx={{mt:2}}>
+        <Typography>{statusText}</Typography>
+      </Box>}
+
       <Box sx={{ mt: 2 }}>
         <Typography variant="h6">Key</Typography>
 
         <Box sx={{ display: 'flex' }}>
-          <TextField variant="standard" type="string" sx={{ flexGrow: 1 }} value={optionName} onChange={(event) => setOptionName(event.target.value)} />
+          <TextField
+            variant="standard"
+            type="string"
+            sx={{ flexGrow: 1 }}
+            value={optionName}
+            onChange={(event) => setOptionName(event.target.value)}
+          />
           <Button variant="contained" sx={{ ml: 2 }} onClick={loadOption}>
             Go
           </Button>
@@ -55,7 +77,12 @@ function App() {
       </Box>
 
       <Box
-        sx={{ mt: 2, flexGrow: 1, flexDirection: 'column', display: 'flex' }}
+        sx={{
+          mt: 2,
+          height: '600px',
+          flexDirection: 'column',
+          display: 'flex',
+        }}
       >
         <Typography variant="h6">Editor</Typography>
         <Box sx={{ flexGrow: 1 }}>
@@ -70,14 +97,16 @@ function App() {
               }
             }}
             options={{
-              minimap: {enabled:false}
+              minimap: { enabled: false },
             }}
           />
         </Box>
       </Box>
 
-      <Box sx={{mt:2,display:"flex",justifyContent:"end"}}>
-        <Button variant="contained" onClick={saveOption}>Save</Button>
+      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'end' }}>
+        <Button variant="contained" onClick={saveOption}>
+          Save
+        </Button>
       </Box>
     </Container>
   );

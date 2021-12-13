@@ -1,8 +1,11 @@
 import { App } from '@slack/bolt';
 import * as parser from 'cron-parser';
 import { subMinutes } from 'date-fns';
+import { getLogger } from '../logger';
 import { cronMessageStoragePath } from '../storagePath';
 import { DefaultStorage } from '../utilities/storage';
+
+const logger = getLogger('cron_message');
 
 type CronMessage = {
   cron: string;
@@ -17,7 +20,7 @@ async function tick(app: App) {
   }
   lastTickTime = now;
 
-  console.log('Tick', now);
+  logger.debug('Tick at %s', now.toString());
 
   const storage = await DefaultStorage.get();
   const cronMessages: CronMessage[] =

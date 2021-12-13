@@ -1,8 +1,9 @@
 node_modules/
+log/
+.yarn/cache/
+.next/
 
 *.sqlite3
 .env
 .env.*
 .eslintcache
-.yarn/cache
-.next

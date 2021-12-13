@@ -1,4 +1,5 @@
 {
+  "name": "slack-bot",
   "workspaces": [
     "packages/*"
   ],

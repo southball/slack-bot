@@ -6,10 +6,11 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import * as APITypes from 'slack-bot-server/src/api/types';
+import { NextPage } from 'next';
 
-const API_URL = (key: string) => `${process.env.REACT_APP_API_URL}/${key}`;
+const API_URL = (key: string) => `${process.env.NEXT_PUBLIC_API_URL}/${key}`;
 
-function App() {
+const Home: NextPage = () => {
   const [statusText, setStatusText] = React.useState<string>('');
   const [optionName, setOptionName] = React.useState<string>('');
   const [value, setValue] = React.useState<string>('');
@@ -39,7 +40,7 @@ function App() {
           headers: { 'Content-Type': 'application/json' },
           body: value,
         });
-        const json = await request.json() as APITypes.HTTPSuccessResponse;
+        const json = (await request.json()) as APITypes.HTTPSuccessResponse;
         if (json.success) {
           setStatusText(`Saved setting for ${optionName} successfully.`);
         }
@@ -55,9 +56,11 @@ function App() {
     >
       <Typography variant="h4">Settings Editor</Typography>
 
-      {statusText &&<Box sx={{mt:2}}>
-        <Typography>{statusText}</Typography>
-      </Box>}
+      {statusText && (
+        <Box sx={{ mt: 2 }}>
+          <Typography>{statusText}</Typography>
+        </Box>
+      )}
 
       <Box sx={{ mt: 2 }}>
         <Typography variant="h6">Key</Typography>
@@ -110,6 +113,6 @@ function App() {
       </Box>
     </Container>
   );
-}
+};
 
-export default App;
+export default Home;

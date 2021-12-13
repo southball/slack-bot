@@ -35,5 +35,11 @@
         "PORT": "4000"
       }
     }
+  ],
+  "compounds": [
+    {
+      "name": "Launch Server and Client",
+      "configurations": ["Launch Server", "Launch Client"]
+    }
   ]
 }

@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import * as APITypes from 'slack-bot-server/src/api/types';
 
-const API_URL = (key: string) => `http://localhost:3000/api/${key}`;
+const API_URL = (key: string) => `${process.env.REACT_APP_API_URL}/${key}`;
 
 function App() {
   const [statusText, setStatusText] = React.useState<string>('');

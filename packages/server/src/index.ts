@@ -30,8 +30,9 @@ async function main() {
 
   expressApp.use('/api', getApiRouter());
 
-  console.log('Server listening at port 3000.');
-  expressApp.listen(3000);
+  const PORT = +(process.env.PORT ?? 3000);
+  console.log(`Server listening at port ${PORT}.`);
+  expressApp.listen(PORT);
 }
 
 main();
